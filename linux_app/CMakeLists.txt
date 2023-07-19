@@ -68,5 +68,4 @@ ${LDLIDAR_DRI_LOGGER}
 ${LDLIDAR_DRI_NETWORK} 
 ${LDLIDAR_DRI_SERIAL})
 target_link_libraries(pressure_test pthread)
-target_link_libraries( ${PROJECT_NAME} ${OpenCV_LIBS})
 
