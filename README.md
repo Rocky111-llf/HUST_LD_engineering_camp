@@ -1,8 +1,8 @@
 # 简介
 
->此SDK包仅适用于乐动工程训练营，所用雷达型号如下
->1. LDROBOT LiDAR LD06. 
->2. LDROBOT LiDAR STL06P.
+>此SDK包仅适用于乐动工程训练营，所用雷达型号如下:
+>1. `LDROBOT LiDAR LD06.` 
+>2. `LDROBOT LiDAR STL06P.`
 
 - 仓库文件说明
 
@@ -13,12 +13,12 @@
     - README.md 
   ```
   
-- 在使用此SDK前请确保以成功安装OpenCV,可使用以下命令安装
+- 在使用此SDK前请确保以成功安装`OpenCV`,可使用以下命令安装
   ```bash
   sudo apt update
   sudo apt install libopencv-dev
   ```
-- 请确保脚本有运行权限,执行以下命令
+- 请确保脚本有运行权限,在`linux_app`目录下执行以下命令
   ```bash
   sudo chmod 777 auto_build.sh clean_build.sh start_node.sh
   ```
@@ -27,7 +27,7 @@
 
 ## 1. 编译
 
-- cd到linux_app目录
+- 移动到`linux_app`目录
   ```bash
   cd ./linux_app/
   ```
