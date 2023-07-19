@@ -1,50 +1,50 @@
-- [中文](#简介)
-- [EN](#Introduction)
-
 # 简介
 
->此SDK包仅适用于深圳乐动机器人有限公司销售的激光雷达产品，产品型号为:
->- LDROBOT LiDAR LD06 LD19.
->- LDROBOT LiDAR STL06P STL26 STL27L.
+>此SDK包仅适用于乐动工程训练营，所用雷达型号如下
+>1. LDROBOT LiDAR LD06. 
+>2. LDROBOT LiDAR STL06P.
 
 - 仓库文件说明
 
   ```bash
   --./
-    - ldlidar_driver/ # ldlidar driver sdk
-    - linux_app/ # linux application demo
-    -  ros_app/  # ROS packages
-    -  ros2_app/ # ROS2 packages
-    - LICENSE  # MIT License file
+    - ldlidar_driver/ # 雷达驱动程序
+    - linux_app/ # linux系统下的雷达数据获取与点云显示例程
     - README.md 
   ```
   
-- 如何使用SDK包?
-
-  - 如果你需要使用Linux app，请阅读`linux_app/`文件夹下的readme.md 文档。[跳转到文档](linux_app/readme.md)
-  - 如果你需要使用ROS app，请阅读`ros_app/`文件夹下的readme.md 文档。[跳转到文档](ros_app/readme.md)
-  - 如果你需要使用ROS2 app，请阅读`ros2_app/`文件夹下的readme.md 文档。[跳转到文档](ros2_app/readme.md)
-
----
-# Introduction
->This SDK Package is only applicable to the LiDAR products sold by Shenzhen LDROBOT Co., LTD. The product models is:
->- LDROBOT LiDAR LD06 LD19.
->- LDROBOT LiDAR STL06P STL26 STL27L.
-
-  - repository file description 
-
+- 在使用此SDK前请确保以成功安装OpenCV,可使用以下命令安装
   ```bash
-  ---./
-    - ldlidar_driver/ # ldlidar driver sdk
-    - linux_app/ # linux application demo
-    -  ros_app/  # ROS packages
-    -  ros2_app/ # ROS2 packages
-    - LICENSE  # MIT License file
-    - README.md 
+  sudo apt update
+  sudo apt install libopencv-dev
+  ```
+- 请确保脚本有运行权限,执行以下命令
+  ```bash
+  sudo chmod 777 auto_build.sh clean_build.sh start_node.sh
   ```
 
--  How do I use the SDK package? 
+# 操作指南
 
-  -  If you need to use the Linux app, please read the readme.md documentation in the folder:`linux_app/`. [skip to file](linux_app/readme.md)
-  -  If you need to use the ROS app，please read the readme.md documentation in the folder:`ros_app/`.[skip to file](ros_app/readme.md)
-  -  If you need to use the ROS2 app，please read the readme.md documentation in the folder:`ros2_app/`.[skip to file](ros2_app/readme.md)
+## 1. 编译
+
+- cd到linux_app目录
+  ```bash
+  cd ./linux_app/
+  ```
+
+- 然后执行以下命令对文件进行编译
+  ```bash
+  ./auto_build.sh
+  ```
+
+## 2. 运行
+- 确保编译成功后，执行以下命令，即可得到雷达数据和点云图
+  ``` bash
+  ./start_node.sh
+  ```
+
+## 3. 清除中间文件和日志
+- 执行以下命令
+  ```bash
+  ./clean_build.sh
+  ```
