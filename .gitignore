@@ -1,2 +1,4 @@
 linux_app/build/
 linux_app/log/
+.vscode
+build

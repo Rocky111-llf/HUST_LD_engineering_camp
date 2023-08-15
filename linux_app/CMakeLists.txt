@@ -35,6 +35,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/include/filter/
 ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/include/logger/
 ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/include/networkcom/
 ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/include/serialcom/
+${CMAKE_CURRENT_SOURCE_DIR}/src/include/
 ${OpenCV_INCLUDE_DIRS}
 )
 
@@ -45,19 +46,31 @@ file(GLOB  LDLIDAR_DRI_LOGGER ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/src/
 file(GLOB  LDLIDAR_DRI_NETWORK ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/src/networkcom/*.cpp)
 file(GLOB  LDLIDAR_DRI_SERIAL ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/src/serialcom/*.cpp)
 
-file(GLOB  MAIN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/linux_demo/*.cpp)
+file(GLOB  SHOW_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/demo/show_demo/*.cpp)
+file(GLOB  MATCH_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/demo/match_demo/*.cpp)
 file(GLOB  PRESSURE_TEST ${CMAKE_CURRENT_SOURCE_DIR}/src/pressure_test/*.cpp)
 
-add_executable(${PROJECT_NAME} 
-${MAIN_SRC} 
+add_executable(show_demo 
+${SHOW_SRC} 
 ${LDLIDAR_DRI_CORE} 
 ${LDLIDAR_DRI_DATARPC} 
 ${LDLIDAR_DRI_FILTER} 
 ${LDLIDAR_DRI_LOGGER} 
 ${LDLIDAR_DRI_NETWORK} 
 ${LDLIDAR_DRI_SERIAL})
-target_link_libraries(${PROJECT_NAME} pthread)
-target_link_libraries( ${PROJECT_NAME} ${OpenCV_LIBS})
+target_link_libraries(show_demo pthread)
+target_link_libraries(show_demo ${OpenCV_LIBS})
+
+add_executable(match_demo 
+${MATCH_SRC} 
+${LDLIDAR_DRI_CORE} 
+${LDLIDAR_DRI_DATARPC} 
+${LDLIDAR_DRI_FILTER} 
+${LDLIDAR_DRI_LOGGER} 
+${LDLIDAR_DRI_NETWORK} 
+${LDLIDAR_DRI_SERIAL})
+target_link_libraries(match_demo pthread)
+target_link_libraries(match_demo ${OpenCV_LIBS})
 
 add_executable(pressure_test 
 ${PRESSURE_TEST} 
