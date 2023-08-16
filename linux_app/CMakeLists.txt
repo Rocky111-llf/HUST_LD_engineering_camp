@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ldlidar_stl)
 
 find_package(OpenCV REQUIRED)
+find_package(OpenAL REQUIRED)
 
 ## Compile option
 if(${CMAKE_BUILD_TYPE} MATCHES "Release")
@@ -48,6 +49,7 @@ file(GLOB  LDLIDAR_DRI_SERIAL ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/src/
 
 file(GLOB  SHOW_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/demo/show_demo/*.cpp)
 file(GLOB  MATCH_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/demo/match_demo/*.cpp)
+file(GLOB  VOICE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/demo/voice_demo/*.cpp)
 file(GLOB  PRESSURE_TEST ${CMAKE_CURRENT_SOURCE_DIR}/src/pressure_test/*.cpp)
 
 add_executable(show_demo 
@@ -71,6 +73,18 @@ ${LDLIDAR_DRI_NETWORK}
 ${LDLIDAR_DRI_SERIAL})
 target_link_libraries(match_demo pthread)
 target_link_libraries(match_demo ${OpenCV_LIBS})
+
+add_executable(voice_demo 
+${VOICE_SRC} 
+${LDLIDAR_DRI_CORE} 
+${LDLIDAR_DRI_DATARPC} 
+${LDLIDAR_DRI_FILTER} 
+${LDLIDAR_DRI_LOGGER} 
+${LDLIDAR_DRI_NETWORK} 
+${LDLIDAR_DRI_SERIAL})
+target_link_libraries(voice_demo pthread)
+target_link_libraries(voice_demo ${OpenCV_LIBS})
+target_link_libraries(voice_demo ${OpenAL_LIBS})
 
 add_executable(pressure_test 
 ${PRESSURE_TEST} 
