@@ -49,6 +49,7 @@ file(GLOB  LDLIDAR_DRI_SERIAL ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/src/
 file(GLOB  SHOW_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/demo/show_demo/*.cpp)
 file(GLOB  MATCH_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/demo/match_demo/*.cpp)
 file(GLOB  VOICE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/demo/voice_demo/*.cpp)
+file(GLOB  MAP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/demo/map_demo/*.cpp)
 file(GLOB  PRESSURE_TEST ${CMAKE_CURRENT_SOURCE_DIR}/src/pressure_test/*.cpp)
 
 add_executable(show_demo 
@@ -84,6 +85,17 @@ ${LDLIDAR_DRI_SERIAL})
 target_link_libraries(voice_demo pthread)
 target_link_libraries(voice_demo ${OpenCV_LIBS})
 target_link_libraries(voice_demo asound)
+
+add_executable(map_demo 
+${MAP_SRC} 
+${LDLIDAR_DRI_CORE} 
+${LDLIDAR_DRI_DATARPC} 
+${LDLIDAR_DRI_FILTER} 
+${LDLIDAR_DRI_LOGGER} 
+${LDLIDAR_DRI_NETWORK} 
+${LDLIDAR_DRI_SERIAL})
+target_link_libraries(map_demo pthread)
+target_link_libraries(map_demo ${OpenCV_LIBS})
 
 add_executable(pressure_test 
 ${PRESSURE_TEST} 

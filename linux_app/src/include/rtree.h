@@ -618,7 +618,8 @@ RTREE_TEMPLATE
         }
     }
 
-    return true;
+    // 没成功返回false
+    return false;
 }
 
 
