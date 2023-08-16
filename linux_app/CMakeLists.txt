@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ldlidar_stl)
 
 find_package(OpenCV REQUIRED)
+find_package(OpenAL REQUIRED)
 
 ## Compile option
 if(${CMAKE_BUILD_TYPE} MATCHES "Release")
@@ -37,6 +38,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/include/networkcom/
 ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/include/serialcom/
 ${CMAKE_CURRENT_SOURCE_DIR}/src/include/
 ${OpenCV_INCLUDE_DIRS}
+${OpenAL_INCLUDE_DIRS}
 )
 
 file(GLOB  LDLIDAR_DRI_CORE ${CMAKE_CURRENT_SOURCE_DIR}/../ldlidar_driver/src/core/*.cpp)
@@ -83,7 +85,7 @@ ${LDLIDAR_DRI_NETWORK}
 ${LDLIDAR_DRI_SERIAL})
 target_link_libraries(voice_demo pthread)
 target_link_libraries(voice_demo ${OpenCV_LIBS})
-target_link_libraries(voice_demo asound)
+target_link_libraries(voice_demo openal)
 
 add_executable(pressure_test 
 ${PRESSURE_TEST} 
