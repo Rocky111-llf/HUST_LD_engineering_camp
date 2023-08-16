@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ldlidar_stl)
 
 find_package(OpenCV REQUIRED)
-find_package(OpenAL REQUIRED)
 
 ## Compile option
 if(${CMAKE_BUILD_TYPE} MATCHES "Release")
@@ -84,7 +83,7 @@ ${LDLIDAR_DRI_NETWORK}
 ${LDLIDAR_DRI_SERIAL})
 target_link_libraries(voice_demo pthread)
 target_link_libraries(voice_demo ${OpenCV_LIBS})
-target_link_libraries(voice_demo ${OpenAL_LIBS})
+target_link_libraries(voice_demo asound)
 
 add_executable(pressure_test 
 ${PRESSURE_TEST} 

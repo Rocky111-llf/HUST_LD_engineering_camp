@@ -1,100 +1,155 @@
-#include <iostream>
-#include <AL/al.h>
-#include <AL/alc.h>
-#include <vector>
+#include <alsa/asoundlib.h>
+#include <unistd.h>
+
+#include <cstdint>
 #include <fstream>
-#include <sstream>
-#include <cstring>
-using namespace std;
+#include <iostream>
 
+#pragma pack(1)
 struct WavHeader {
-    char chunkID[4];
-    uint32_t chunkSize;
-    char format[4];
-    char subchunk1ID[4];
-    uint32_t subchunk1Size;
-    uint16_t audioFormat;
-    uint16_t numChannels;
-    uint32_t sampleRate;
-    uint32_t byteRate;
-    uint16_t blockAlign;
-    uint16_t bitsPerSample;
-    char subchunk2ID[4];
-    uint32_t subchunk2Size;
+    uint32_t id;
+    uint32_t chunk_size;
+    uint32_t form_type;
+    uint32_t fmt;
+    uint32_t subchunk_size;
+    uint16_t audio_format;
+    uint16_t channel_nums;
+    uint32_t sample_rate;
+    uint32_t byte_rate;
+    uint16_t block_align;
+    uint16_t bits_per_sample;
+    uint32_t data;
+    uint32_t data_size;
 };
+#pragma pack()
 
-uint32_t GetSampleRate(const char* file)
-{
-	ifstream ifs(file, ios::in|ios::binary);
-	if(!ifs.is_open())
-	{
-		std::cerr << "Can't open file:" << file << endl;
-		return 0;
-	}
-	WavHeader header;
-    ifs.read(reinterpret_cast<char *>(&header), sizeof(WavHeader));
-	ifs.close();
-    if (std::string(header.chunkID, 4) != "RIFF" ||
-        std::string(header.format, 4) != "WAVE" ||
-        std::string(header.subchunk1ID, 4) != "fmt " ||
-        (std::string(header.subchunk2ID, 4) != "data" &&
-		std::string(header.subchunk2ID, 4) != "LIST")
-		) {
-        std::cerr << "Invalid WAV file" << std::endl;
-        return 0;
+void set_master_volume(long volume) {
+    long min, max;
+    snd_mixer_t *handle;
+    snd_mixer_selem_id_t *sid;
+    const char *card = "default";
+    const char *selem_name = "Master";
+
+    snd_mixer_open(&handle, 0);
+    snd_mixer_attach(handle, card);
+    snd_mixer_selem_register(handle, NULL, NULL);
+    snd_mixer_load(handle);
+
+    snd_mixer_selem_id_alloca(&sid);
+    snd_mixer_selem_id_set_index(sid, 0);
+    snd_mixer_selem_id_set_name(sid, selem_name);
+    snd_mixer_elem_t *elem = snd_mixer_find_selem(handle, sid);
+
+    snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
+    snd_mixer_selem_set_playback_volume_all(elem, volume * max / 100);
+
+    snd_mixer_close(handle);
+}
+
+int main(int argc, char **argv) {
+    if (argc < 2) {
+        std::cout << std::string(argv[0]) << " wav_file_path" << std::endl;
+        return -1;
     }
-	return header.sampleRate;
-	
+
+    std::string wav_file_name(argv[1]);
+    if (access(wav_file_name.c_str(), F_OK) != 0) {
+        std::cout << "File (" << wav_file_name << ") not exist!" << std::endl;
+        return -1;
+    }
+
+    // open wav file
+    std::fstream wav(wav_file_name, std::ios_base::in | std::ios::binary);
+    if (wav.fail()) {
+        std::cout << wav_file_name << " open failed!" << std::endl;
+        return -1;
+    }
+
+    // parse wav file
+    WavHeader wav_header;
+
+    wav.read((char *)&wav_header, sizeof(wav_header));
+    if (wav.fail()) {
+        std::cout << "Read file failed!" << std::endl;
+        return -1;
+    }
+    if (wav_header.id != (uint32_t)0x46464952 or wav_header.fmt != (u_int32_t)0x20746d66 or wav_header.audio_format != 1) {
+        std::cout << std::hex << wav_header.id << std::endl;
+        std::cout << std::hex << wav_header.fmt << std::endl;
+        std::cout << std::hex << wav_header.data << std::endl;
+        std::cout << "audio format: " << wav_header.audio_format << std::endl;
+        // audio format 为1 表示
+        std::cout << "File format error!" << std::endl;
+        return -1;
+    }
+
+    // summary
+    std::cout << "sample_rate: " << wav_header.sample_rate << std::endl;
+    std::cout << "bit per sample: " << wav_header.bits_per_sample << std::endl;
+    std::cout << "channel nums: " << wav_header.channel_nums << std::endl;
+
+    set_master_volume(99);  // 99%
+    // play audio
+    int err;
+    unsigned int i;
+    snd_pcm_t *handle;
+    snd_pcm_sframes_t frames;
+    std::string device("default");
+    unsigned char buffer[512];
+
+    if ((err = snd_pcm_open(&handle, device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+        printf("Playback open error: %s\n", snd_strerror(err));
+        exit(EXIT_FAILURE);
+    }
+
+    snd_pcm_format_t pcm_format;
+    switch (wav_header.bits_per_sample) {
+    case 8:
+        pcm_format = SND_PCM_FORMAT_S8;
+        break;
+    case 16:
+        pcm_format = SND_PCM_FORMAT_S16_LE;
+        break;
+    case 32:
+        pcm_format = SND_PCM_FORMAT_S32_LE;
+        break;
+    default:
+        break;
+    }
+
+    if ((err = snd_pcm_set_params(handle,
+                                  pcm_format,
+                                  SND_PCM_ACCESS_RW_INTERLEAVED,
+                                  wav_header.channel_nums,
+                                  wav_header.sample_rate,
+                                  1,
+                                  500000)) < 0) { /* 0.5sec */
+        printf("Playback open error: %s\n", snd_strerror(err));
+        exit(EXIT_FAILURE);
+    }
+
+    while (true) {
+        wav.read((char *)&buffer, 512);
+        if (wav.gcount() <= 0) {
+            std::cout << "END" << std::endl;
+            break;
+        }
+        frames = snd_pcm_writei(handle, buffer, wav.gcount() / (wav_header.bits_per_sample * 2 / 8));
+        if (frames < 0)
+            frames = snd_pcm_recover(handle, frames, 0);
+        if (frames < 0) {
+            printf("snd_pcm_writei failed: %s\n", snd_strerror(frames));
+            break;
+        }
+        if (wav.gcount() != 512) {
+            std::cout << "END" << std::endl;
+            break;
+        }
+    }
+
+    /* pass the remaining samples, otherwise they're dropped in close */
+    err = snd_pcm_drain(handle);
+    if (err < 0)
+        printf("snd_pcm_drain failed: %s\n", snd_strerror(err));
+    snd_pcm_close(handle);
 }
-
-bool PlaySound(const char* file)
-{
-	// 初始化OpenAL
-	ALCdevice* device = alcOpenDevice(nullptr);
-    ALCcontext* context = alcCreateContext(device, nullptr);
-    alcMakeContextCurrent(context);
-	
-	const unsigned int False = 0;
-	unsigned int nSampleRate = GetSampleRate(file);
-	if(False == nSampleRate)
-		return false;
-	
-	std::ifstream ifs(file, ios::binary|ios::in);
-	std::ostringstream tmp;
-	tmp << ifs.rdbuf();
-	std::string str = tmp.str();
-	ifs.close();
-	
-    ALuint source;
-    alGenSources(1, &source);
-    ALuint bufferId;
-    alGenBuffers(1, &bufferId);
-    alBufferData(bufferId, AL_FORMAT_MONO16, str.c_str(), str.size(), nSampleRate);
-    alSourcei(source, AL_BUFFER, bufferId);
-    alSourcePlay(source);
-
-    // 等待音频播放完毕
-    ALint state;
-    do
-    {
-        alGetSourcei(source, AL_SOURCE_STATE, &state);
-    } while (state == AL_PLAYING);
-
-    // 清理
-    alDeleteSources(1, &source);
-    alDeleteBuffers(1, &bufferId);
-    alcDestroyContext(context);
-    alcCloseDevice(device);
-	return true;
-}
-int main()
-{
-    PlaySound("wavFile");
-    return 0;
-}
-
-//编译指令：g++ audio.cpp -o test -std=c++11 -lopenal
-
-
-
-
