@@ -206,7 +206,7 @@ int main(int argc, char **argv)
     double lidar_spin_freq;
 
     // 显示倍率
-    int cv_multiple = 500;
+    int cv_multiple = 100;
 
     // 上一帧数据时雷达相对于起始点的坐标
     double last_insert_x = 0;
@@ -214,12 +214,12 @@ int main(int argc, char **argv)
     double last_insert_a = 0;
 
     // 栅格图变量
-    GridMap2D grid_map(1200, 800, 0.02);
+    GridMap2D grid_map(1200, 800, 0.01);
     cv::Mat grid_show(grid_map.get_h(), grid_map.get_w(), CV_8UC1);
 
     // 点云图变量
-    const int show_w = 400;
-    const int show_h = 300;
+    const int show_w = 800;
+    const int show_h = 600;
     cv::Mat points_show(show_h, show_w, CV_8UC3);
     memset(&points_show.data[0], 255, show_h * show_w * 3);
 

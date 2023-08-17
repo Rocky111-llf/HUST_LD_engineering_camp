@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
     set_master_volume(99);  // 99%
     // play audio
     int err;
-    unsigned int i;
+    // unsigned int i;
     snd_pcm_t *handle;
     snd_pcm_sframes_t frames;
     std::string device("default");
