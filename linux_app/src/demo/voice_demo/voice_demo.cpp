@@ -6,7 +6,8 @@
 #include <iostream>
 
 #pragma pack(1)
-struct WavHeader {
+struct WavHeader
+{
     uint32_t id;
     uint32_t chunk_size;
     uint32_t form_type;
@@ -23,7 +24,8 @@ struct WavHeader {
 };
 #pragma pack()
 
-void set_master_volume(long volume) {
+void set_master_volume(long volume)
+{
     long min, max;
     snd_mixer_t *handle;
     snd_mixer_selem_id_t *sid;
@@ -46,21 +48,12 @@ void set_master_volume(long volume) {
     snd_mixer_close(handle);
 }
 
-int main(int argc, char **argv) {
-    if (argc < 2) {
-        std::cout << std::string(argv[0]) << " wav_file_path" << std::endl;
-        return -1;
-    }
-
-    std::string wav_file_name(argv[1]);
-    if (access(wav_file_name.c_str(), F_OK) != 0) {
-        std::cout << "File (" << wav_file_name << ") not exist!" << std::endl;
-        return -1;
-    }
-
-    // open wav file
+bool play_sound(std::string wav_file_name)
+{
+    // 打开文件
     std::fstream wav(wav_file_name, std::ios_base::in | std::ios::binary);
-    if (wav.fail()) {
+    if (wav.fail())
+    {
         std::cout << wav_file_name << " open failed!" << std::endl;
         return -1;
     }
@@ -69,11 +62,13 @@ int main(int argc, char **argv) {
     WavHeader wav_header;
 
     wav.read((char *)&wav_header, sizeof(wav_header));
-    if (wav.fail()) {
+    if (wav.fail())
+    {
         std::cout << "Read file failed!" << std::endl;
         return -1;
     }
-    if (wav_header.id != (uint32_t)0x46464952 or wav_header.fmt != (u_int32_t)0x20746d66 or wav_header.audio_format != 1) {
+    if (wav_header.id != (uint32_t)0x46464952 or wav_header.fmt != (u_int32_t)0x20746d66 or wav_header.audio_format != 1)
+    {
         std::cout << std::hex << wav_header.id << std::endl;
         std::cout << std::hex << wav_header.fmt << std::endl;
         std::cout << std::hex << wav_header.data << std::endl;
@@ -88,7 +83,7 @@ int main(int argc, char **argv) {
     std::cout << "bit per sample: " << wav_header.bits_per_sample << std::endl;
     std::cout << "channel nums: " << wav_header.channel_nums << std::endl;
 
-    set_master_volume(99);  // 99%
+    set_master_volume(99); // 99%
     // play audio
     int err;
     // unsigned int i;
@@ -97,13 +92,15 @@ int main(int argc, char **argv) {
     std::string device("default");
     unsigned char buffer[512];
 
-    if ((err = snd_pcm_open(&handle, device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+    if ((err = snd_pcm_open(&handle, device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) < 0)
+    {
         printf("Playback open error: %s\n", snd_strerror(err));
         exit(EXIT_FAILURE);
     }
 
     snd_pcm_format_t pcm_format;
-    switch (wav_header.bits_per_sample) {
+    switch (wav_header.bits_per_sample)
+    {
     case 8:
         pcm_format = SND_PCM_FORMAT_S8;
         break;
@@ -123,25 +120,30 @@ int main(int argc, char **argv) {
                                   wav_header.channel_nums,
                                   wav_header.sample_rate,
                                   1,
-                                  500000)) < 0) { /* 0.5sec */
+                                  500000)) < 0)
+    { /* 0.5sec */
         printf("Playback open error: %s\n", snd_strerror(err));
         exit(EXIT_FAILURE);
     }
 
-    while (true) {
+    while (true)
+    {
         wav.read((char *)&buffer, 512);
-        if (wav.gcount() <= 0) {
+        if (wav.gcount() <= 0)
+        {
             std::cout << "END" << std::endl;
             break;
         }
         frames = snd_pcm_writei(handle, buffer, wav.gcount() / (wav_header.bits_per_sample * 2 / 8));
         if (frames < 0)
             frames = snd_pcm_recover(handle, frames, 0);
-        if (frames < 0) {
+        if (frames < 0)
+        {
             printf("snd_pcm_writei failed: %s\n", snd_strerror(frames));
             break;
         }
-        if (wav.gcount() != 512) {
+        if (wav.gcount() != 512)
+        {
             std::cout << "END" << std::endl;
             break;
         }
@@ -152,4 +154,25 @@ int main(int argc, char **argv) {
     if (err < 0)
         printf("snd_pcm_drain failed: %s\n", snd_strerror(err));
     snd_pcm_close(handle);
+}
+
+int main(int argc, char **argv)
+{
+    if (argc < 2)
+    {
+        std::cout << std::string(argv[0]) << " wav_file_path" << std::endl;
+        return -1;
+    }
+
+    // 判断文件是否存在
+    std::string wav_file_name(argv[1]);
+    if (access(wav_file_name.c_str(), F_OK) != 0)
+    {
+        std::cout << "File (" << wav_file_name << ") not exist!" << std::endl;
+        return -1;
+    }
+
+    play_sound(wav_file_name);
+
+    return 0;
 }
