@@ -50,12 +50,19 @@ void set_master_volume(long volume)
 
 bool play_sound(std::string wav_file_name)
 {
+    // 判断文件是否存在
+    if (access(wav_file_name.c_str(), F_OK) != 0)
+    {
+        std::cout << "File (" << wav_file_name << ") not exist!" << std::endl;
+        return false;
+    }
+
     // 打开文件
     std::fstream wav(wav_file_name, std::ios_base::in | std::ios::binary);
     if (wav.fail())
     {
         std::cout << wav_file_name << " open failed!" << std::endl;
-        return -1;
+        return false;
     }
 
     // parse wav file
@@ -65,7 +72,7 @@ bool play_sound(std::string wav_file_name)
     if (wav.fail())
     {
         std::cout << "Read file failed!" << std::endl;
-        return -1;
+        return false;
     }
     if (wav_header.id != (uint32_t)0x46464952 or wav_header.fmt != (u_int32_t)0x20746d66 or wav_header.audio_format != 1)
     {
@@ -75,7 +82,7 @@ bool play_sound(std::string wav_file_name)
         std::cout << "audio format: " << wav_header.audio_format << std::endl;
         // audio format 为1 表示
         std::cout << "File format error!" << std::endl;
-        return -1;
+        return false;
     }
 
     // summary
@@ -154,6 +161,8 @@ bool play_sound(std::string wav_file_name)
     if (err < 0)
         printf("snd_pcm_drain failed: %s\n", snd_strerror(err));
     snd_pcm_close(handle);
+
+    return true;
 }
 
 int main(int argc, char **argv)
@@ -164,14 +173,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    // 判断文件是否存在
     std::string wav_file_name(argv[1]);
-    if (access(wav_file_name.c_str(), F_OK) != 0)
-    {
-        std::cout << "File (" << wav_file_name << ") not exist!" << std::endl;
-        return -1;
-    }
-
+    
     play_sound(wav_file_name);
 
     return 0;
